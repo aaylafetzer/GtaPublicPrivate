@@ -134,11 +134,9 @@ while(True):
 
 #Start lagswitch loop
 print("Macro key is: " + macro)
-keys = []
 while (True):
     firing = False
     key = keyboard.read_key()
-    print(key)
     if (key == macro and not firing):
         firing = True
         firing = toggle_connection()
