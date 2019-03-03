@@ -1,3 +1,0 @@
-ShotBind:a,b,c,d
-Adapter:1
-Duration:30

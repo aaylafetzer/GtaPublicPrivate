@@ -1,5 +1,9 @@
 import importlib
-import subprocess, os, ctypes, keyboard
+import subprocess
+import os
+import ctypes
+import keyboard
+import time
 from pathlib import Path
 
 scriptpath = os.path.dirname(os.path.abspath(__file__))
@@ -23,6 +27,7 @@ def config_scan():
                 configs.append(i)
 
 def new_config():
+    global macro, adapter, duration
     answer = input("No config files found in directory. Would you like to make a new one? Y/n: ")
     while True:
         if (answer == 'y' or answer == 'Y'):
@@ -88,21 +93,52 @@ def new_config():
             f.close()
             approved = True
 
+def load_config(path):
+    global macro, adapter, duration
+    f = open(path, 'r')
+    macro = f.readline()[8:].strip()
+    adapter = f.readline()[8:].strip()
+    duration = int(f.readline()[9:].strip())
+
+def toggle_connection():
+    global adapter, duration
+    print("Disable")
+    os.system('wmic path win32_networkadapter where index=' + adapter + ' call disable')
+    time.sleep(duration)
+    os.system('wmic path win32_networkadapter where index=' + adapter + ' call enable')
+
+config_scan()
+
 #Create a new config file if none exist
 if (len(configs) == 0):
     new_config()
-    approved = False
-    while (not approved):
-        answer = input("Would you like to load this configuration file? Y/n: ")
-        if (answer == 'y' or answer == 'Y'):
-            configs.append(path)
-            approved = True
-        elif (answer == 'n' or answer == 'N'):
-            print("No Config File Loaded, Exiting")
-            exit()
-        else:
-            print("Please input a y or an n")
+    config_scan()
 
+#Exit if script is not being run as admin
 if (is_admin == False):
     print("This tool needs to be run as an administrator to work properly! Press any key to exit")
     exit()
+
+#Pick a premade configuration
+print("Please select a config to load")
+for i in range(len(configs)):
+    print(str(i) + ': ' + configs[i])
+while(True):
+    answer = input()
+    try:
+        answer = int(answer)
+        load_config(scriptpath + '\\cfg\\' + configs[answer])
+        break
+    except:
+        print("Please give an integer answer")
+
+#Start lagswitch loop
+print("Macro key is: " + macro)
+keys = []
+while (True):
+    firing = False
+    key = keyboard.read_key()
+    print(key)
+    if (key == macro and not firing):
+        firing = True
+        firing = toggle_connection()
