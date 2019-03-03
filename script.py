@@ -4,12 +4,13 @@ import os
 import ctypes
 import keyboard
 import time
+import psutil
 from pathlib import Path
 
 scriptpath = os.path.dirname(os.path.abspath(__file__))
 configs = []
 macro = None
-adapter = None
+process = None
 duration = None
 
 try: #Check for admin rights
@@ -54,24 +55,11 @@ def new_config():
                 print("Please input a y or an n")
     approved = False
     while (not approved):
-        adapters = os.popen('wmic nic get name, index').read().split('\n\n')
-        for i in adapters:
-            print(i)
-        answer = input("Please pick a network adapter to cut: ")
-        try:
-            adapter = int(answer)
-            for i in adapters:
-                if (str(adapter) == i[:len(str(adapter))]):
-                    print("Selected adapter: " + ' '.join(i.split()[1:]))
-                    approved = True
-                    break
-            if (not approved):
-                print("Please pick a number from the list")
-        except:
-            print("Please input a integer answer")
+        process = input("Please pick a process name to suspend: ")
+        approved = True
     approved = False
     while (not approved):
-        duration = input("Please enter a duration in seconds to shut off the network adapter for: ")
+        duration = input("Please enter a duration in seconds to suspend the process for: ")
         try:
             duration = int(duration)
             approved = True
@@ -87,25 +75,31 @@ def new_config():
         else:
             print("Saving configuration: " + name + '.cfg')
             f = open(path, 'w')
-            f.write("ShotKey:" + macro + '\n')
-            f.write("Adapter:" + str(adapter) + '\n')
+            f.write("Macro:" + macro + '\n')
+            f.write("Process:" + str(process) + '\n')
             f.write("Duration:" + str(duration) + '\n')
             f.close()
             approved = True
 
 def load_config(path):
-    global macro, adapter, duration
+    global macro, process, duration
     f = open(path, 'r')
-    macro = f.readline()[8:].strip()
-    adapter = f.readline()[8:].strip()
+    macro = f.readline()[6:].strip()
+    process = f.readline()[8:].strip()
     duration = int(f.readline()[9:].strip())
 
 def toggle_connection():
-    global adapter, duration
-    print("Disable")
-    os.system('wmic path win32_networkadapter where index=' + adapter + ' call disable')
-    time.sleep(duration)
-    os.system('wmic path win32_networkadapter where index=' + adapter + ' call enable')
+    x = os.popen('tasklist').read().strip().split("\n")
+    for i in x:
+        i = i.split()
+        if (i[0] == process):
+            print(i)
+            p = psutil.Process(int(i[1]))
+            print("Suspending")
+            p.suspend()
+            time.sleep(duration)
+            print("Resuming")
+            p.resume()
 
 config_scan()
 
@@ -134,9 +128,9 @@ while(True):
 
 #Start lagswitch loop
 print("Macro key is: " + macro)
+print("Suspending process: " + process)
+print("For: " +  str(duration) + " seconds")
 while (True):
-    firing = False
     key = keyboard.read_key()
-    if (key == macro and not firing):
-        firing = True
-        firing = toggle_connection()
+    if (key == macro):
+        toggle_connection()
