@@ -5,6 +5,7 @@ import ctypes
 import keyboard
 import time
 import psutil
+import sys
 from pathlib import Path
 
 scriptpath = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +19,10 @@ try: #Check for admin rights
 except AttributeError:
     is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
 
+if (is_admin == False):
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+    exit()
+
 def config_scan():
     #Check for any config files
     if not os.path.exists(scriptpath + '\\cfg\\'):
@@ -29,15 +34,6 @@ def config_scan():
 
 def new_config():
     global macro, adapter, duration
-    answer = input("No config files found in directory. Would you like to make a new one? Y/n: ")
-    while True:
-        if (answer == 'y' or answer == 'Y'):
-            break
-        elif (answer == 'n' or answer == 'N'):
-            print("No Config Files Found, Exiting")
-            exit()
-        else:
-            print("Please input a y or an n")
     #Make a new config file
     approved = False
     while (not approved):
@@ -105,23 +101,33 @@ config_scan()
 
 #Create a new config file if none exist
 if (len(configs) == 0):
-    new_config()
-    config_scan()
-
-#Exit if script is not being run as admin
-if (is_admin == False):
-    print("This tool needs to be run as an administrator to work properly! Press any key to exit")
-    exit()
+    answer = input("No config files found in directory. Would you like to make a new one? Y/n: ")
+    while True:
+        if (answer == 'y' or answer == 'Y'):
+            new_config()
+            config_scan()
+            break
+        elif (answer == 'n' or answer == 'N'):
+            print("No Config Files Found, Exiting")
+            exit()
+        else:
+            print("Please input a y or an n")
 
 #Pick a premade configuration
 print("Please select a config to load")
 for i in range(len(configs)):
     print(str(i) + ': ' + configs[i])
+print(str(len(configs)) + ': Make a new config file')
 while(True):
     answer = input()
     try:
         answer = int(answer)
-        load_config(scriptpath + '\\cfg\\' + configs[answer])
+        if (int(answer) == len(configs)):
+            new_config()
+            config_scan()
+            exit()
+        else:
+            load_config(scriptpath + '\\cfg\\' + configs[answer])
         break
     except:
         print("Please give an integer answer")
