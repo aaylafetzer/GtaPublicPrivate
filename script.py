@@ -37,20 +37,9 @@ def new_config():
     #Make a new config file
     approved = False
     while (not approved):
-        macro = input("Please input a key to be used as the trigger key: ")[:1]
-        print(macro)
-        answer = input("Does this macro seem right? Y/n: ")
-        while True:
-            if (answer == 'y' or answer == 'Y'):
-                approved = True
-                break
-            elif (answer == 'n' or answer == 'N'):
-                print("Restarting capture")
-                break
-            else:
-                print("Please input a y or an n")
+        macro = input("Please input a key to be used as the trigger key (only the first key will be used): ")[:1]
     approved = False
-    while (not approved):
+    while (not approved):d
         process = input("Please pick a process name to suspend: ")
         approved = True
     approved = False
