@@ -39,7 +39,7 @@ def new_config():
     while (not approved):
         macro = input("Please input a key to be used as the trigger key (only the first key will be used): ")[:1]
     approved = False
-    while (not approved):d
+    while (not approved):
         process = input("Please pick a process name to suspend: ")
         approved = True
     approved = False
