@@ -5,7 +5,7 @@ import time
 import sys
 import psutil
 from cliutil.Permissions import getwindowsadmin
-from cliutl.Selections import listselection
+from cliutil.Selections import listselection
 from cliutil.Questions import stringquestion
 from cliutil.Questions import numberquestion
 from cliutil.Questions import yesnoquestion
